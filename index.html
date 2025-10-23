@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOCK_PC — Услуги и ремонт</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+--color-windows:#0ea5e9;--color-upgrade:#f59e0b;--color-network:#10b981;--color-bios:#ef4444;--color-other:#8b5cf6;
+--bg-light:#f0f4f8;--bg-dark:#111827;--text-light:#0f172a;--text-dark:#f0f4f8;
+}
+body{font-family:Arial,sans-serif;margin:0;background:var(--bg-light);color:var(--text-light);transition:.3s;}
+.dark-mode{background:var(--bg-dark);color:var(--text-dark);}
+.container{max-width:1000px;margin:10px auto;padding:10px;}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.logo{font-weight:700;font-size:24px;color:var(--color-windows);}
+header a{text-decoration:none;color:inherit;font-size:13px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.card{border-radius:12px;padding:12px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;transition:all .3s;cursor:pointer;position:relative;}
+.card h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:4px;}
+.card p{margin:0 0 8px;font-size:12px;}
+.price{margin-bottom:8px;font-weight:700;text-align:right;font-size:13px;}
+.btn{background:#fff;color:#111;padding:6px 10px;border-radius:8px;border:0;cursor:pointer;font-size:12px;transition:.2s;}
+.btn:hover{background:#e5e7eb;}
+.complaint{color:#fff;cursor:pointer;text-decoration:underline;font-weight:600;margin-top:10px;font-size:13px;}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:.15s;z-index:30;}
+.modal{background:#fff;width:90%;max-width:500px;border-radius:12px;padding:15px;box-shadow:0 12px 30px rgba(0,0,0,0.2);}
+.modal h2{margin:0 0 10px;font-size:16px;}
+.input,textarea,select{width:100%;padding:6px;margin-top:4px;border-radius:6px;border:1px solid #ccc;font-size:13px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+.close{background:#e5e7eb;color:#111;padding:6px 10px;border-radius:6px;border:0;cursor:pointer;font-size:12px;}
+.bot-container{position:fixed;bottom:15px;right:15px;width:300px;background:#fff;border-radius:10px;box-shadow:0 6px 15px rgba(0,0,0,0.15);font-size:12px;display:flex;flex-direction:column;overflow:hidden;z-index:31;}
+.bot-header{background:var(--color-windows);color:#fff;padding:8px;text-align:center;font-weight:600;font-size:13px;}
+.bot-messages{padding:6px;flex:1;overflow-y:auto;max-height:250px;}
+.bot-message{margin-bottom:4px;display:inline-block;padding:4px 8px;border-radius:8px;max-width:85%;}
+.bot-message.bot{background:#e5e7eb;color:#0f172a;}
+.bot-message.user{background:var(--color-windows);color:#fff;align-self:flex-end;}
+.bot-input{display:flex;border-top:1px solid #e5e7eb;}
+.bot-input input{flex:1;border:none;padding:4px 8px;font-size:12px;border-radius:0;}
+.bot-input button{border:none;background:var(--color-windows);color:#fff;padding:4px 8px;cursor:pointer;font-size:12px;}
+.bot-input button:hover{background:#0284c7;}
+.icon{color:#fff;font-size:14px;}
+.dark-toggle{cursor:pointer;padding:4px 8px;border-radius:6px;background:#111827;color:#fff;margin-left:10px;font-size:12px;}
+.tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;}
+.card:hover .tooltip{opacity:1;}
+.progress-bar{height:6px;background:#d1d5db;border-radius:3px;margin-top:4px;}
+.progress{height:100%;background:var(--color-windows);border-radius:3px;width:0;transition:.5s;}
+.quick-btns{display:flex;justify-content:space-around;margin-top:5px;}
+.quick-btns button{background:var(--color-windows);color:#fff;border:none;padding:4px 6px;border-radius:6px;font-size:11px;cursor:pointer;}
+.quick-btns button:hover{background:#0284c7;}
+.rating span{cursor:pointer;font-size:16px;margin-right:2px;color:#ffca28;}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<div class="logo">DOCK_PC</div>
+<div style="text-align:right;">
+<p>📞 <a href="tel:+79674532198">+7 967 453-21-98</a></p>
+<p>💬 <a href="https://t.me/DOCK_PC" target="_blank">@DOCK_PC</a></p>
+<span class="dark-toggle" onclick="toggleDark()">🌓 Тёмный режим</span>
+</div>
+</header>
+
+<div>
+<input id="searchInput" placeholder="Поиск услуг..." style="padding:6px;width:100%;border-radius:6px;border:1px solid #ccc;margin-bottom:10px;">
+<div style="margin-bottom:5px;">
+<button class="btn" onclick="filterCategory('')">Все</button>
+<button class="btn" onclick="filterCategory('Windows')">Windows</button>
+<button class="btn" onclick="filterCategory('Апгрейд')">Апгрейд</button>
+<button class="btn" onclick="filterCategory('Сеть')">Сеть</button>
+<button class="btn" onclick="filterCategory('BIOS')">BIOS</button>
+<button class="btn" onclick="filterCategory('Доп. услуги')">Доп. услуги</button>
+</div>
+</div>
+
+<div class="grid" id="servicesGrid"></div>
+<p class="complaint" onclick="alert('Жалобы/предложения: пишите в Telegram @DOCK_PC')">Жалобы / предложения</p>
+<div id="counter" style="margin-top:10px;font-weight:600;">Выполнено заказов: 0</div>
+<div class="progress-bar"><div class="progress" id="progressBar"></div></div>
+
+<!-- Модальное окно -->
+<div id="modalBack" class="modal-back" onclick="closeModal(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<h2>Заполните заявку</h2>
+<label>Выбранная услуга</label>
+<input id="serviceInput" class="input" readonly>
+<label>Категория</label>
+<select id="serviceCategory" class="input">
+<option>Windows</option><option>Апгрейд</option><option>Сеть</option><option>BIOS</option><option>Доп. услуги</option>
+</select>
+<label>Имя</label>
+<input id="userName" class="input" placeholder="Ваше имя">
+<label>Фамилия</label>
+<input id="userSurname" class="input" placeholder="Ваша фамилия">
+<label>Телефон</label>
+<input id="userPhone" class="input" placeholder="+7">
+<label>Email</label>
+<input id="userEmail" class="input" placeholder="example@mail.com">
+<label>Адрес</label>
+<input id="userAddress" class="input" placeholder="Заполняется автоматически">
+<label>Комментарий</label>
+<textarea id="userQuestion" class="input" placeholder="Ваш вопрос"></textarea>
+<div class="modal-actions">
+<button class="btn" onclick="sendServiceForm()">Отправить</button>
+<button class="close" onclick="closeModal()">Закрыть</button>
+</div>
+</div>
+</div>
+
+<!-- Чат -->
+<div class="bot-container">
+<div class="bot-header">DOCK_PC Бот</div>
+<div class="bot-messages" id="botMessages"></div>
+<div class="quick-btns">
+<button onclick="quickReply('Записаться на выезд')">Записаться на выезд</button>
+<button onclick="quickReply('Перезвоните мне')">Перезвоните мне</button>
+<button onclick="quickReply('Есть проблема с ПК')">Есть проблема с ПК</button>
+</div>
+<div class="bot-input">
+<input id="botInput" placeholder="Напишите сообщение...">
+<button onclick="sendBot()">Отправить</button>
+</div>
+</div>
+</div>
+
+<script>
+// Сервисы
+let services=[
+{name:'Установка Windows 7',category:'Windows',price:'от 450',color:'var(--color-windows)',tooltip:'Полная установка и драйвера'},
+{name:'Установка Windows 10',category:'Windows',price:'от 450',color:'var(--color-windows)',tooltip:'Полная установка и драйвера'},
+{name:'Установка Windows 11',category:'Windows',price:'от 450',color:'var(--color-windows)',tooltip:'Полная установка и драйвера'},
+{name:'Перенос данных и резервное копирование',category:'Доп. услуги',price:'от 500',color:'var(--color-other)',tooltip:'Сохранение и перенос файлов'},
+{name:'Разгон ОЗУ XMP и по таймингам',category:'Апгрейд',price:'от 600',color:'var(--color-upgrade)',tooltip:'Ускорение памяти'},
+{name:'Обновление BIOS',category:'BIOS',price:'от 600',color:'var(--color-bios)',tooltip:'Перепрошивка материнской платы'},
+{name:'Разгон / Андервольт AMD/NVIDIA',category:'Апгрейд',price:'от 700',color:'var(--color-upgrade)',tooltip:'Оптимизация производительности'},
+{name:'Настройка интернета и Wi-Fi',category:'Сеть',price:'от 300',color:'var(--color-network)',tooltip:'Wi-Fi роутеры и локальная сеть'}
+];
+
+let counter=0;
+function renderServices(filter=''){
+const grid=document.getElementById('servicesGrid');grid.innerHTML='';
+const search=document.getElementById('searchInput').value.toLowerCase();
+services.forEach(s=>{
+if((filter===''||s.category===filter)&&s.name.toLowerCase().includes(search)){
+const card=document.createElement('div');card.className='card';card.style.backgroundColor=s.color;
+card.innerHTML=`<h3>${s.name} <i class="fa-solid fa-circle-info icon"></i></h3><p class="tooltip">${s.tooltip}</p><p class="price">${s.price}</p><button class="btn" onclick="openModal('${s.name}','${s.category}')">Заполнить</button>
+<div class="rating" data-service="${s.name}"><span onclick="rateService(this,1)">☆</span><span onclick="rateService(this,2)">☆</span><span onclick="rateService(this,3)">☆</span><span onclick="rateService(this,4)">☆</span><span onclick="rateService(this,5)">☆</span></div>`;
+grid.appendChild(card);
+}});
+}
+document.getElementById('searchInput').addEventListener('input',()=>renderServices());
+function filterCategory(cat){renderServices(cat);}
+
+// Рейтинг услуг
+let ratings={};
+function rateService(el,value){
+const service=el.parentElement.dataset.service;
+if(!ratings[service]) ratings[service]=[];
+ratings[service].push(value);
+const avg=Math.round(ratings[service].reduce((a,b)=>a+b,0)/ratings[service].length);
+updateStars(el.parentElement,avg);
+}
+function updateStars(container,avg){Array.from(container.children).forEach((s,i)=>{s.textContent=(i<avg)?"★":"☆";});}
+
+// Бот
+let botStats={started:0,sent:0};
+const botMessages=document.getElementById('botMessages');
+function notifyUser(title,msg){if(Notification.permission==="granted"){new Notification(title,{body:msg});}else if(Notification.permission!=="denied"){Notification.requestPermission().then(p=>{if(p==="granted"){new Notification(title,{body:msg});}});}}
+function botReply(msg){
+const botMsg=document.createElement('div');botMsg.className='bot-message bot';botMsg.textContent=msg;botMessages.appendChild(botMsg);botMessages.scrollTop=botMessages.scrollHeight;
+notifyUser("DOCK_PC бот",msg);}
+function addUserMsg(msg){
+const userMsg=document.createElement('div');userMsg.className='bot-message user';userMsg.textContent=msg;botMessages.appendChild(userMsg);botMessages.scrollTop=botMessages.scrollHeight;}
+function sendBot(){
+const val=document.getElementById('botInput').value.trim();
+if(!val)return;addUserMsg(val);document.getElementById('botInput').value='';
+if(botStats.started===0){botStats.started++;updateStats();botReply('Привет! Я DOCK_PC бот. Как вас зовут?');return;}
+if(!localStorage.getItem('botName')){localStorage.setItem('botName',val);botReply(`Рад знакомству, ${val}. Какова ваша фамилия?`);return;}
+if(!localStorage.getItem('botSurname')){localStorage.setItem('botSurname',val);botReply(`Спасибо! Какой у вас вопрос или проблема с ПК?`);return;}
+botReply('Спасибо! Сейчас я передам вашу заявку оператору 😉');botStats.sent++;updateStats();}
+function quickReply(msg){addUserMsg(msg);botReply('Спасибо! Сейчас я передам вашу заявку оператору 😉');botStats.sent++;updateStats();}
+function updateStats(){console.log(`Диалоги начато: ${botStats.started}, заявки отправлено: ${botStats.sent}`);}
+
+// Темный режим
+function toggleDark(){document.body.classList.toggle('dark-mode');}
+
+// Модальное окно
+function openModal(service,category){
+document.getElementById('serviceInput').value=service;
+document.getElementById('serviceCategory').value=category;
+document.getElementById('modalBack').style.visibility='visible';
+document.getElementById('modalBack').style.opacity='1';
+fillAddressByGeolocation();}
+function closeModal(e){if(e)e.stopPropagation();document.getElementById('modalBack').style.visibility='hidden';document.getElementById('modalBack').style.opacity='0';}
+
+// Геолокация
+function fillAddressByGeolocation(){
+if(!navigator.geolocation){alert('Геолокация не поддерживается');return;}
+navigator.geolocation.getCurrentPosition(async(position)=>{
+const lat=position.coords.latitude,lon=position.coords.longitude;
+try{
+const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+const data=await res.json();document.getElementById('userAddress').value=data.display_name||`${lat},${lon}`;
+}catch(err){console.error(err);document.getElementById('userAddress').value=`${lat},${lon}`;}
+},(err)=>{console.error(err);});
+}
+
+// Отправка формы
+function sendServiceForm(){
+const formData={n:document.getElementById('userName').value,s:document.getElementById('userSurname').value,p:document.getElementById('userPhone').value,e:document.getElementById('userEmail').value,q:document.getElementById('userQuestion').value,svc:document.getElementById('serviceInput').value,cat:document.getElementById('serviceCategory').value,addr:document.getElementById('userAddress').value};
+localStorage.setItem('lastForm',JSON.stringify(formData));
+alert('Заявка отправлена! Оператор получит все данные. 😉');counter++;document.getElementById('counter').innerText=`Выполнено заказов: ${counter}`;
+document.getElementById('progressBar').style.width=Math.min(100,counter*10)+'%';
+closeModal();
+}
+
+renderServices();
+</script>
+</body>
+</html>
